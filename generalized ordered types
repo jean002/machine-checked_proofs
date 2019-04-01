@@ -179,7 +179,7 @@ begin
 end
 
 -- We show that Prop is a generalized ordered type. We first define
--- a binary relation and an equality on Prop.
+-- a binary relation on Prop.
 
 def g_o_1 (p q : Prop) : Prop := ¬ p ∧ q
 
@@ -226,3 +226,54 @@ begin
   let h3 : g_o_1 false q := h1.left h2,
   exact h3.right,
 end
+
+lemma simple13: ∀ p q : Prop, (pw_o_1 p q ∧ pw_o_1 q p) → ((p → q) ∧ (q → p)) :=
+
+begin
+  intros,
+  split,
+  apply simple12,
+    exact a.left,
+  apply simple12,
+    exact a.right,
+end
+
+-- We need the univalence axiom for Prop to prove the following.
+
+theorem simple14_positive_antisymmetry: ∀ p q : Prop, (pw_o_1 p q ∧ pw_o_1 q p) → p = q :=
+
+begin
+  intros,
+  let h : (p → q) ∧ (q → p) := simple13 p q a,
+  apply univalence_for_Prop p q h,
+end
+
+def LEM : Prop := ∀ p : Prop, p ∨ ¬ p
+
+theorem simple15: (∀ r p q : Prop, g_o_1 p q → g_o_1 p r ∨ g_o_1 r q) → LEM :=
+
+begin
+  intros,
+  unfold LEM,
+  intro,
+  let h : g_o_1 false true,
+  let h1 : ¬ false,
+  contradiction,
+  let h2 : true,
+  trivial,
+  split,
+  assumption,
+  assumption,
+  let h3 : g_o_1 false true → g_o_1 false p ∨ g_o_1 p true := a p false true,
+  let h4 : g_o_1 false p ∨ g_o_1 p true := h3 h,
+  destruct h4,
+  intro,
+    apply or.inl h_1.right,
+  intro,
+    apply or.inr h_1.left,
+end
+
+
+    
+
+   
