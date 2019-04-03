@@ -1,4 +1,4 @@
--- The binary relation g_o stands for the strict order <,
+ -- The binary relation g_o stands for the strict order <,
 -- and the binary relation pw_o stands for the weak inequa-
 -- lity <=.
 
@@ -6,10 +6,10 @@
 constants {A : Type } (g_o : A → A → Prop)
 
 def pw_o (x y : A) : Prop := ∀ w : A, (g_o w x → g_o w y) ∧ (g_o y w → g_o x w)
-def asymmetric: Prop := ∀  x y : A, g_o x y → ¬ g_o y x
-def g_transitive : Prop := ∀ x y z : A, (g_o x y ∧ g_o y z) → g_o x z
-def positive_antisymmetric : Prop := (∀ x y : A, (pw_o x y ∧ pw_o y x) → x = y)
-def g_ordered_type (A : Type) : Prop := asymmetric ∧ g_transitive ∧ positive_antisymmetric
+def asymmetric (A : Type) (g_o : A → A → Prop): Prop := ∀  x y : A, g_o x y → ¬ g_o y x
+def g_transitive (A : Type) (g_o : A → A → Prop): Prop := ∀ x y z : A, (g_o x y ∧ g_o y z) → g_o x z
+def positive_antisymmetric (A : Type) (pw_o : A → A → Prop): Prop := (∀ x y : A, (pw_o x y ∧ pw_o y x) → x = y)
+def g_ordered_type (A : Type) (g_o : A → A → Prop) (pw_o : A → A → Prop): Prop := asymmetric A g_o ∧ g_transitive A g_o ∧ positive_antisymmetric A pw_o
 
 
 theorem simple1: ∀ x y z : A, g_o x y ∧ pw_o y z → g_o x z :=
@@ -62,7 +62,7 @@ begin
      exact a,
 end
 
-theorem simple4: ∀ x y : A, g_transitive → g_o x y → pw_o x y :=
+theorem simple4: ∀ x y : A, g_transitive A g_o → g_o x y → pw_o x y :=
 
 begin
    unfold pw_o g_ordered_type,
@@ -84,7 +84,7 @@ end
 
 def nw_o (x y : A) : Prop := ¬ g_o y x
 
-theorem simple5: ∀ x : A, asymmetric → nw_o x x :=
+theorem simple5: ∀ x : A, asymmetric A g_o → nw_o x x :=
 
 begin
    unfold nw_o asymmetric,
@@ -95,7 +95,7 @@ begin
    exact a_1,
 end
 
-theorem simple6: ∀ x y : A, asymmetric → pw_o x y → nw_o x y :=
+theorem simple6: ∀ x y : A, asymmetric A g_o → pw_o x y → nw_o x y :=
 
 begin
    unfold nw_o,
@@ -111,10 +111,10 @@ begin
    exact h1,
 end
 
-def cotransitivity : Prop := ∀ x y z : A, g_o x y → g_o x z ∨ g_o z y 
+def cotransitivity (A : Type) (g_o : A → A → Prop): Prop := ∀ x y z : A, g_o x y → g_o x z ∨ g_o z y 
 
 
-theorem simple7: cotransitivity → ∀ x y : A, nw_o x y → pw_o x y :=
+theorem simple7: cotransitivity A g_o → ∀ x y : A, nw_o x y → pw_o x y :=
 
 begin
    unfold pw_o,
@@ -144,10 +144,10 @@ begin
        assumption,
 end
 
-def negative_antisymmetry : Prop := ∀ x y : A, nw_o x y ∧ nw_o y x → x = y
+def negative_antisymmetry (A : Type) (nw_o : A → A → Prop): Prop := ∀ x y : A, nw_o x y ∧ nw_o y x → x = y
 
 
-theorem simple8: asymmetric → negative_antisymmetry → positive_antisymmetric :=
+theorem simple8: asymmetric A g_o → negative_antisymmetry A nw_o → positive_antisymmetric A pw_o :=
 
 begin
   unfold negative_antisymmetry positive_antisymmetric,
@@ -162,7 +162,7 @@ begin
     exact a_2.right,
 end
 
-theorem simple9: asymmetric → cotransitivity → g_transitive :=
+theorem simple9: asymmetric A g_o → cotransitivity A g_o → g_transitive A g_o :=
 
 begin
   unfold asymmetric cotransitivity g_transitive,
@@ -192,23 +192,25 @@ def pw_o_1 (p q : Prop) : Prop := ∀ r : Prop, (g_o_1 r p → g_o_1 r q) ∧ (g
 
 axiom univalence_for_Prop : ∀ p q : Prop, (p → q) ∧ (q → p) → p = q 
 
-theorem simple10_asymmetry : ∀ p q : Prop, g_o_1 p q → ¬ g_o_1 q p := 
+theorem simple10: asymmetric Prop g_o_1 := 
 
 begin
+  unfold asymmetric,
   unfold g_o_1,
   intros,
   intro,
   apply (a.left a_1.right),
 end
 
-theorem simple11_g_transitivity : ∀ p q r : Prop, g_o_1 p q → g_o_1 q r → g_o_1 p r :=
+theorem simple11: g_transitive Prop g_o_1 :=
 
 begin
+  unfold g_transitive,
   unfold g_o_1,
   intros,
   split,
-  exact a.left,
-  exact a_1.right,
+  exact a.left.left,
+  exact a.right.right,
 end
 
 lemma simple12: ∀ p q : Prop, pw_o_1 p q → (p → q) :=
@@ -240,19 +242,31 @@ end
 
 -- We need the univalence axiom for Prop to prove the following.
 
-theorem simple14_positive_antisymmetry: ∀ p q : Prop, (pw_o_1 p q ∧ pw_o_1 q p) → p = q :=
+theorem simple14: positive_antisymmetric Prop pw_o_1:=
 
 begin
+  unfold positive_antisymmetric,
   intros,
-  let h : (p → q) ∧ (q → p) := simple13 p q a,
-  apply univalence_for_Prop p q h,
+  let h : (x → y) ∧ (y → x) := simple13 x y a,
+  apply univalence_for_Prop x y h,
+end
+
+theorem simple15: g_ordered_type Prop g_o_1 pw_o_1 :=
+
+begin
+  split,
+  apply simple10,
+  split,
+  apply simple11,
+  apply simple14,
 end
 
 def LEM : Prop := ∀ p : Prop, p ∨ ¬ p
 
-theorem simple15: (∀ r p q : Prop, g_o_1 p q → g_o_1 p r ∨ g_o_1 r q) → LEM :=
+theorem simple16: cotransitivity Prop g_o_1 → LEM :=
 
 begin
+  unfold cotransitivity,
   intros,
   unfold LEM,
   intro,
@@ -264,7 +278,7 @@ begin
   split,
   assumption,
   assumption,
-  let h3 : g_o_1 false true → g_o_1 false p ∨ g_o_1 p true := a p false true,
+  let h3 : g_o_1 false true → g_o_1 false p ∨ g_o_1 p true := a false true p,
   let h4 : g_o_1 false p ∨ g_o_1 p true := h3 h,
   destruct h4,
   intro,
@@ -273,7 +287,8 @@ begin
     apply or.inr h_1.left,
 end
 
+  
 
-    
+  
 
-   
+  
