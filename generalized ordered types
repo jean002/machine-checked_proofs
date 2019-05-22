@@ -287,6 +287,83 @@ begin
     apply or.inr h_1.left,
 end
 
+inductive Fintype : Type
+| a : Fintype
+| b : Fintype
+| c : Fintype
+
+inductive rel : Fintype → Fintype →  Prop 
+| r1 : rel Fintype.a Fintype.b
+| r2 : ∀ p : Prop, (p → rel Fintype.a Fintype.c )
+| r3 : ∀ p : Prop, (¬ p → rel Fintype.c Fintype.b) 
+
+
+axiom asymmetry_for_Fintype : ∀ x y : Fintype, rel x y → ¬ rel y x
+axiom trivial1 : ¬ rel Fintype.c Fintype.a
+axiom trivial2 : ¬ rel Fintype.b Fintype.c
+axiom trivial3 : ∀ p : Prop, rel Fintype.a Fintype.c → p 
+axiom trivial4 : ∀ p : Prop, rel Fintype.c Fintype.b → ¬ p
+
+
+-- We define two weak binary relations with respect to any type and any binary relation
+-- on that type. 
+
+def nw_o_2 (X : Type) (binrel : X → X → Prop) (x y : X) : Prop := ¬ binrel y x
+def pw_o_2 (X : Type) (binrel : X → X → Prop )(x y : X) : Prop := ∀ z : X, (binrel z x → binrel z y) ∧ (binrel y z → binrel x z)
+
+-- We need this lemma to prove the next theorem.
+
+lemma simple17: ∀ x y : Fintype, nw_o_2 Fintype rel x y → pw_o_2 Fintype rel x y :=
+
+begin
+  unfold nw_o_2 pw_o_2,
+  intros,
+  repeat{induction x},
+  repeat{induction y},
+  repeat{induction z},
+  all_goals{split},
+  all_goals{intro},
+  repeat{trivial},
+  repeat{assumption},
+  let h1 : ¬ rel Fintype.a Fintype.a := asymmetry_for_Fintype Fintype.a Fintype.a a_1, contradiction,
+  let h2 : ¬ rel Fintype.b Fintype.b := asymmetry_for_Fintype Fintype.b Fintype.b a_1, contradiction,
+  apply (rel.r3 (rel Fintype.b Fintype.a)) a,
+  apply (rel.r2 (rel Fintype.b Fintype.c)) a_1,
+  let h3 : ¬ rel Fintype.a Fintype.a := asymmetry_for_Fintype Fintype.a Fintype.a a_1, contradiction,
+  let h4 : false := ((asymmetry_for_Fintype Fintype.a Fintype.b) rel.r1) a_1, contradiction,
+  let h5 : false := ((trivial4 ¬rel Fintype.c Fintype.a ) a_1) a, contradiction,
+  let h6 : ¬ rel Fintype.c Fintype.c := asymmetry_for_Fintype Fintype.c Fintype.c a_1, contradiction,
+  let h1 : ¬ rel Fintype.a Fintype.a := asymmetry_for_Fintype Fintype.a Fintype.a a_1, contradiction,
+  let h2 : ¬ rel Fintype.b Fintype.b := asymmetry_for_Fintype Fintype.b Fintype.b a_1, contradiction,
+  let h7 : false := a rel.r1, contradiction,
+  let h7 : false := a rel.r1, contradiction,
+  apply rel.r2 (rel Fintype.a Fintype.b) a_1,
+  let h8 : false := trivial1 a_1, contradiction,
+  let h2 : ¬ rel Fintype.b Fintype.b := asymmetry_for_Fintype Fintype.b Fintype.b a_1, contradiction,
+  let h6 : ¬ rel Fintype.c Fintype.c := asymmetry_for_Fintype Fintype.c Fintype.c a_1, contradiction,
+  let h1 : ¬ rel Fintype.a Fintype.a := asymmetry_for_Fintype Fintype.a Fintype.a a_1, contradiction,
+  let h9 : false := trivial2 a_1, contradiction,
+  apply (rel.r3 (rel Fintype.a Fintype.c)) a,
+  let h6 : ¬ rel Fintype.c Fintype.c := asymmetry_for_Fintype Fintype.c Fintype.c a_1, contradiction,
+  exact rel.r1,
+  let h10 : false := (asymmetry_for_Fintype Fintype.a Fintype.b) rel.r1 a_1, contradiction,
+  let h2 : ¬ rel Fintype.b Fintype.b := asymmetry_for_Fintype Fintype.b Fintype.b a_1, contradiction,
+  let h6 : ¬ rel Fintype.c Fintype.c := asymmetry_for_Fintype Fintype.c Fintype.c a_1, contradiction,
+end
+
+theorem simple18: (∀ Y : Type, ∀ binrel2 : Y → Y → Prop, ((∀ x y : Y, nw_o_2 Y binrel2 x y → pw_o_2 Y binrel2 x y) → cotransitivity Y binrel2)) → LEM :=
+
+begin
+  unfold cotransitivity LEM,
+  intros,
+  let h1 : cotransitivity Fintype rel := a Fintype rel simple17,
+  let h2 : rel Fintype.a Fintype.c ∨ rel Fintype.c Fintype.b := (h1 Fintype.a Fintype.b Fintype.c) rel.r1,
+  destruct h2,
+  intro,
+    apply or.inl (trivial3 p h),
+  intro,
+    apply or.inr (trivial4 p h),  
+end
   
 
   
