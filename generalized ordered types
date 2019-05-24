@@ -1,4 +1,6 @@
- -- The binary relation g_o stands for the strict order <,
+namespace gen_order
+
+-- The binary relation g_o stands for the strict order <,
 -- and the binary relation pw_o stands for the weak inequa-
 -- lity <=.
 
@@ -364,6 +366,8 @@ begin
   intro,
     apply or.inr (trivial4 p h),  
 end
+
+end gen_order
   
 
   
